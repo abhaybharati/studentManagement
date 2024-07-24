@@ -2,64 +2,60 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Student;
 use Illuminate\Http\Request;
+use App\Models\Student;
 
 class StudentController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        //
+        // If request data found the the response would be in json other wise it will load the home page
+        if (request()->ajax()) {
+            $students = Student::latest()->get();
+            return response()->json(['students' => $students]);
+        }
+
+        return view('home');
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
+    // create or update the student data
     public function store(Request $request)
     {
-        //
+
+        // find the student data by student id if found then update.
+
+        $student = Student::find($request->student_id);
+
+        if ($student) {
+            // Update the existing record
+            $student->update([
+                'name' => $request->name,
+                'subject' => $request->subject,
+                'marks' => $request->marks
+            ]);
+        } else {
+            // Create a new record if not any id found
+            $student = Student::create([
+                'name' => $request->name,
+                'subject' => $request->subject,
+                'marks' => $request->marks
+            ]);
+        }
+
+        return response()->json(['student' => $student]);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Student $student)
+    // find the student by id and return response to json to populat in modal.
+    public function edit($id)
     {
-        //
+        $student = Student::find($id);
+        return response()->json($student);
     }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Student $student)
+    
+    // delete function to find the data of student by id and if found delete it
+    public function destroy($id)
     {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Student $student)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Student $student)
-    {
-        //
+        Student::findOrFail($id)->delete();
+        return response()->json(['success' => true]);
     }
 }
